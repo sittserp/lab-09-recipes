@@ -55,6 +55,20 @@ describe('recipe-lab routes', () => {
       });
   });
 
+  it('gets a recipe by id', async() => {
+    const recipes = await Promise.all([
+      { name: 'cookies', directions: [] },
+      { name: 'cake', directions: [] },
+      { name: 'pie', directions: [] }
+    ].map(recipe => Recipe.insert(recipe)));
+
+    return request(app)
+      .get(`/api/v1/recipes/${recipes[0].id}`)
+      .then(res => {
+        expect(res.body).toEqual(recipes[0]);
+      });
+  });
+
   it('updates a recipe by id', async() => {
     const recipe = await Recipe.insert({
       name: 'cookies',
@@ -107,35 +121,6 @@ describe('recipe-lab routes', () => {
         expect(res.body).toEqual({
           id: expect.any(String),
           name: 'cookies',
-          directions: [
-            'preheat oven to 375',
-            'mix ingredients',
-            'put dough on cookie sheet',
-            'bake for 10 minutes'
-          ]
-        });
-      });
-  });
-
-  it('patches a recipe by id', async() => {
-    const recipe = await Recipe.insert({
-      name: 'cookies',
-      directions: [
-        'preheat oven to 375',
-        'mix ingredients',
-        'put dough on cookie sheet',
-        'bake for 10 minutes'
-      ]
-    });
-    return request(app)
-      .patch(`/api/v1/recipes/${recipe.id}`)
-      .send({
-        name: 'good cookies'
-      })
-      .then(res => {
-        expect(res.body).toEqual({
-          id: expect.any(String),
-          name: 'good cookies',
           directions: [
             'preheat oven to 375',
             'mix ingredients',
