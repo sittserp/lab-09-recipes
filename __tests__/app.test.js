@@ -9,6 +9,10 @@ describe('recipe-lab routes', () => {
     return pool.query(fs.readFileSync('./sql/setup.sql', 'utf-8'));
   });
 
+  afterAll(() => {
+    return pool.end();
+  });
+
   it('creates a recipe', () => {
     return request(app)
       .post('/api/v1/recipes')
