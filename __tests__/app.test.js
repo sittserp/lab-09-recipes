@@ -6,8 +6,10 @@ const Recipe = require('../lib/models/recipe');
 const Log = require('../lib/models/Log');
 
 describe('recipe-lab routes', () => {
-  beforeEach(() => {
-    return pool.query(fs.readFileSync('./sql/setup.sql', 'utf-8'));
+  let recipe;
+  beforeEach(async() => {
+    await pool.query(fs.readFileSync('./sql/setup.sql', 'utf-8'));
+    recipe = await Recipe.insert({ name: 'cookies', ingredients: 'flour, eggs, butter, chocolate chips', directions: [] });
   });
 
   afterAll(() => {
@@ -59,13 +61,13 @@ describe('recipe-lab routes', () => {
   });
 
   it('gets a recipe by id and all associated logs', async() => {
-    const recipes = await Promise.all([
-      { name: 'cookies', ingredients: 'flour, eggs, butter, chocolate chips', directions: [] },
-      { name: 'cake', ingredients: 'flour, eggs, milk, oil', directions: [] },
-      { name: 'pie', ingredients: 'flour, eggs, apples', directions: [] }
-    ].map(recipe => Recipe.insert(recipe)));
+    // const recipes = await Promise.all([
+    //   { name: 'cookies', ingredients: 'flour, eggs, butter, chocolate chips', directions: [] },
+    //   { name: 'cake', ingredients: 'flour, eggs, milk, oil', directions: [] },
+    //   { name: 'pie', ingredients: 'flour, eggs, apples', directions: [] }
+    // ].map(recipe => Recipe.insert(recipe)));
 
-    console.log('these are recipes', recipes);
+    // console.log('these are recipes', recipes);
 
     const logs = await Promise.all([
       {
@@ -89,42 +91,43 @@ describe('recipe-lab routes', () => {
     ].map(log => Log.insert(log)));
 
     return request(app)
-      .get(`/api/v1/recipes/${recipes[0].id}`)
+      .get(`/api/v1/recipes/${recipe.id}`)
       .then(res => {
-        expect(res.body).toEqual({
-          ...recipes[0],
-          logs: expect.arrayContaining(logs)
-        }
-          // { 
-          //   id: expect.any(String), 
-          //   name: 'cookies',
-          //   ingredients: 'flour, eggs, butter, chocolate chips', 
-          //   directions: [],
-          //   logs: 
-          //   [
-          //     {
-          //       dateOfEvent: 'Dec. 15, 2020', 
-          //       id: expect.any(String), 
-          //       notes: 'This was a good batch.', 
-          //       rating: '5 stars', 
-          //       recipeId: '1'
-          //     }, 
-          //     {
-          //       dateOfEvent: 'Dec. 15, 2020', 
-          //       id: expect.any(String), 
-          //       notes: 'This was a decent batch.', 
-          //       rating: '4 stars', 
-          //       recipeId: 1
-          //     }, 
-          //     {
-          //       dateOfEvent: 'Dec. 15, 2020', 
-          //       id: expect.any(String), 
-          //       notes: 'This was an ok batch.', 
-          //       rating: '3 stars', 
-          //       recipeId: '1'
-          //     }
-          //   ]
-          //}
+        expect(res.body).toEqual(
+        //   {
+        //   ...recipes[0],
+        //   logs: expect.arrayContaining(logs)
+        // }
+          { 
+            id: expect.any(String), 
+            name: 'cookies',
+            ingredients: 'flour, eggs, butter, chocolate chips', 
+            directions: [],
+            logs: 
+            [
+              {
+                dateOfEvent: 'Dec. 15, 2020', 
+                id: expect.any(String), 
+                notes: 'This was a good batch.', 
+                rating: '5 stars', 
+                recipeId: '1'
+              }, 
+              {
+                dateOfEvent: 'Dec. 15, 2020', 
+                id: expect.any(String), 
+                notes: 'This was a decent batch.', 
+                rating: '4 stars', 
+                recipeId: '1'
+              }, 
+              {
+                dateOfEvent: 'Dec. 15, 2020', 
+                id: expect.any(String), 
+                notes: 'This was an ok batch.', 
+                rating: '3 stars', 
+                recipeId: '1'
+              }
+            ]
+          }
         );
       });
   });
